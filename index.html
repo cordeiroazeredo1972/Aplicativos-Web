@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111827">
+<title>Minha Evolução — V1.2</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f4f6f8;color:#17202a}
+header{background:#111827;color:#fff;padding:24px 18px 20px;border-radius:0 0 24px 24px}
+h1{margin:0;font-size:24px}.sub{opacity:.75;margin-top:5px;font-size:13px}
+main{padding:16px 16px 92px;max-width:760px;margin:auto}.screen{display:none}.screen.active{display:block}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.card{background:#fff;border-radius:16px;padding:15px;box-shadow:0 2px 10px #0000000d}
+.label{font-size:12px;color:#68727d}.value{font-size:23px;font-weight:700;margin-top:5px}.unit{font-size:12px;font-weight:500;color:#68727d}
+.section{font-size:18px;font-weight:700;margin:24px 0 10px}.btn{border:0;border-radius:14px;padding:13px 16px;font-weight:700;background:#111827;color:#fff;cursor:pointer}.btn.secondary{background:#e9edf2;color:#17202a}.btn.full{width:100%;margin-top:10px}
+.row{display:flex;gap:8px;align-items:center}.row>*{flex:1}
+form{background:#fff;padding:16px;border-radius:18px}.field{margin-bottom:13px}label{display:block;font-size:12px;font-weight:700;margin-bottom:6px;color:#4b5563}input,select,textarea{width:100%;padding:12px;border:1px solid #d7dce1;border-radius:11px;font-size:16px;background:#fff}textarea{min-height:80px;resize:vertical}
+.item{background:#fff;border-radius:15px;padding:14px;margin:9px 0;display:flex;justify-content:space-between;gap:10px}.item strong{display:block}.muted{color:#68727d;font-size:12px;margin-top:3px}
+nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e5e7eb;display:flex;justify-content:space-around;padding:8px 4px calc(8px + env(safe-area-inset-bottom));z-index:5}
+nav button{background:none;border:0;color:#6b7280;font-size:11px;padding:5px}.navicon{font-size:20px;display:block}.activeNav{color:#111827!important;font-weight:700}
+.chart{background:#fff;border-radius:16px;padding:12px}.barrow{display:flex;align-items:center;gap:8px;margin:8px 0;font-size:12px}.bar{height:10px;border-radius:8px;background:#111827}.empty{text-align:center;color:#68727d;padding:25px}
+.notice{background:#eef2ff;border-radius:14px;padding:12px;font-size:13px;margin-top:12px}
+.progress{height:9px;background:#e8ebef;border-radius:8px;overflow:hidden;margin-top:8px}.progress>i{display:block;height:100%;background:#111827}
+.kpi{font-size:12px;color:#68727d;margin-top:6px}.mini{font-size:11px}
+.linechart{height:180px;display:flex;align-items:flex-end;gap:8px;padding:12px 4px 4px}.col{flex:1;text-align:center;font-size:10px;color:#68727d}.col i{display:block;background:#111827;border-radius:5px 5px 0 0;min-height:4px;margin-bottom:4px}.pill{display:inline-block;background:#eef2f4;border-radius:999px;padding:4px 8px;font-size:11px;margin-left:5px}
+</style>
+</head>
+<body>
+<header><h1>Minha Evolução</h1><div class="sub">Atividades físicas e evolução corporal</div></header>
+<main>
+<section id="home" class="screen active">
+<div class="section">Visão geral <span id="homePeriod" class="muted"></span></div>
+<div class="cards">
+<div class="card"><div class="label">Peso atual</div><div class="value" id="dPeso">—</div></div>
+<div class="card"><div class="label">Gordura</div><div class="value" id="dGordura">—</div></div>
+<div class="card"><div class="label">Atividades no mês</div><div class="value" id="dAtiv">0</div></div>
+<div class="card"><div class="label">Tempo no mês</div><div class="value" id="dTempo">0h</div></div>
+</div>
+<div class="section">Acesso rápido</div>
+<div class="row"><button class="btn" onclick="show('atividade')">+ Atividade</button><button class="btn secondary" onclick="show('avaliacao')">+ Avaliação</button></div>
+<div class="section">Atalhos de treino</div>
+<div class="row">
+<button class="btn secondary" onclick="quickActivity('Beach Tennis',60)">BT · 1h</button>
+<button class="btn secondary" onclick="quickActivity('Musculação',60)">Musculação · 1h</button>
+<button class="btn secondary" onclick="quickActivity('Corrida',30)">Corrida · 30min</button>
+</div>
+<div class="section">Última atividade</div><div id="lastActivity"></div>
+<div class="section">Última avaliação</div><div id="lastEval"></div>
+<div class="section">Metas</div>
+<div id="goalCards" class="cards"></div>
+<div class="notice">Seus registros ficam salvos neste aparelho. A V1.2 continua sem depender de Excel.</div>
+</section>
+
+<section id="atividade" class="screen">
+<div class="section">Nova atividade</div>
+<form onsubmit="saveActivity(event)">
+<div class="field"><label>Data</label><input id="aData" type="date" required></div>
+<div class="field"><label>Atividade</label><select id="aTipo"><option>Beach Tennis</option><option>Musculação</option><option>Corrida</option><option>Caminhada</option><option>Ciclismo</option><option>Outra</option></select></div>
+<div class="field"><label>Duração (minutos)</label><input id="aDur" type="number" min="1" required placeholder="60"></div>
+<div class="field"><label>Local</label><input id="aLocal" placeholder="BT Molina, academia, praia..."></div>
+<div class="field"><label>Intensidade</label><select id="aInt"><option>Leve</option><option selected>Moderada</option><option>Forte</option></select></div>
+<div class="field"><label>Observações</label><textarea id="aObs" placeholder="Como foi o treino?"></textarea></div>
+<button class="btn full">Salvar atividade</button>
+</form>
+<div class="section">Histórico</div><div id="activityList"></div>
+</section>
+
+<section id="avaliacao" class="screen">
+<div class="section">Nova avaliação física</div>
+<form onsubmit="saveEval(event)">
+<div class="field"><label>Data</label><input id="eData" type="date" required></div>
+<div class="field"><label>Peso (kg)</label><input id="ePeso" type="number" step="0.1" min="0" required></div>
+<div class="field"><label>Gordura corporal (%)</label><input id="eGord" type="number" step="0.1" min="0" max="100" required></div>
+<div class="field"><label>Massa de gordura (kg) — opcional</label><input id="eMG" type="number" step="0.1" min="0"></div>
+<div class="field"><label>Massa magra (kg) — opcional</label><input id="eMM" type="number" step="0.1" min="0"></div>
+<div class="field"><label>Altura (m) — opcional, usada para calcular IMC</label><input id="eAlt" type="number" step="0.01" min="0.5" max="2.5" placeholder="Ex.: 1,72"></div>
+<div class="field"><label>Observações</label><textarea id="eObs"></textarea></div>
+<button class="btn full">Salvar avaliação</button>
+</form>
+<div class="section">Indicadores calculados</div>
+<div class="cards">
+<div class="card"><div class="label">Massa de gordura</div><div class="value" id="calcFat">—</div></div>
+<div class="card"><div class="label">Massa magra</div><div class="value" id="calcLean">—</div></div>
+<div class="card"><div class="label">IMC</div><div class="value" id="calcBMI">—</div></div>
+</div>
+<div class="section">Evolução</div><div id="evalList"></div>
+</section>
+
+<section id="relatorios" class="screen">
+<div class="section">Relatórios</div>
+<div class="row"><button class="btn secondary" onclick="changeReport(-1)">‹</button><button class="btn secondary" onclick="changeReport(1)">›</button></div>
+<div class="row"><select id="rPeriodo" onchange="renderReports()"><option value="week">Esta semana</option><option value="month" selected>Este mês</option></select><span id="rTitulo"></span></div>
+<div class="cards">
+<div class="card"><div class="label">Atividades</div><div class="value" id="rAtiv">0</div></div>
+<div class="card"><div class="label">Tempo</div><div class="value" id="rTempo">0h</div></div>
+</div>
+<div class="section">Distribuição por atividade</div><div class="chart" id="rTipos"></div>
+<div class="section">Evolução corporal</div><div class="chart" id="rCorpo"></div>
+</section>
+
+<section id="config" class="screen">
+<div class="section">Configurações</div>
+<div class="card"><strong>Minha Evolução — V1</strong><p class="muted">Dados armazenados localmente neste aparelho.</p></div>
+<div class="section">Metas pessoais</div>
+<form onsubmit="saveGoals(event)">
+<div class="field"><label>Meta de peso (kg)</label><input id="gPeso" type="number" step="0.1" min="0" placeholder="Ex.: 80"></div>
+<div class="field"><label>Meta de gordura (%)</label><input id="gGord" type="number" step="0.1" min="0" max="100" placeholder="Ex.: 20"></div>
+<div class="field"><label>Meta de atividades por semana</label><input id="gFreq" type="number" min="0" placeholder="Ex.: 4"></div>
+<button class="btn full">Salvar metas</button>
+</form>
+<div class="section">Dados</div>
+<button class="btn full secondary" onclick="exportData()">Exportar backup JSON</button>
+<button class="btn full secondary" onclick="clearData()">Apagar todos os dados</button>
+</section>
+</main>
+<nav>
+<button id="n-home" class="activeNav" onclick="show('home')"><span class="navicon">⌂</span>Início</button>
+<button id="n-atividade" onclick="show('atividade')"><span class="navicon">🏃</span>Atividades</button>
+<button id="n-avaliacao" onclick="show('avaliacao')"><span class="navicon">⚖</span>Avaliação</button>
+<button id="n-relatorios" onclick="show('relatorios')"><span class="navicon">▥</span>Relatórios</button>
+<button id="n-config" onclick="show('config')"><span class="navicon">⚙</span>Config.</button>
+</nav>
+
+<script>
+const KEY='minha_evolucao_v1';
+let db=JSON.parse(localStorage.getItem(KEY)||'{"activities":[],"evaluations":[],"goals":{"peso":null,"gord":null,"freq":4}}');
+db.goals=db.goals||{peso:null,gord:null,freq:4};
+let reportMonth=new Date();
+
+function persist(){localStorage.setItem(KEY,JSON.stringify(db));renderAll()}
+function today(){return new Date().toISOString().slice(0,10)}
+function fmtDate(s){return new Date(s+'T12:00:00').toLocaleDateString('pt-BR')}
+function show(id){
+ document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));
+ document.getElementById(id).classList.add('active');
+ document.querySelectorAll('nav button').forEach(x=>x.classList.remove('activeNav'));
+ document.getElementById('n-'+id).classList.add('activeNav');
+ renderAll();
+}
+function quickActivity(type,dur){show('atividade');aTipo.value=type;aDur.value=dur;aData.value=today()}
+function saveActivity(e){
+ e.preventDefault();
+ db.activities.push({id:Date.now(),date:aData.value,type:aTipo.value,dur:+aDur.value,local:aLocal.value.trim(),int:aInt.value,obs:aObs.value.trim()});
+ e.target.reset();aData.value=today();persist();show('home');
+}
+function saveEval(e){
+ e.preventDefault();
+ let p=+ePeso.value,g=+eGord.value,alt=+eAlt.value||null,mg=+eMG.value||null,mm=+eMM.value||null;
+ if(!mg)mg=p*g/100;if(!mm)mm=p-mg;
+ db.evaluations.push({id:Date.now(),date:eData.value,peso:p,gord:g,mg,mm,alt,obs:eObs.value.trim()});
+ e.target.reset();eData.value=today();persist();show('home');
+}
+function saveGoals(e){
+ e.preventDefault();
+ db.goals={peso:+gPeso.value||null,gord:+gGord.value||null,freq:+gFreq.value||0};
+ persist(); alert('Metas salvas.'); show('home');
+}
+function delA(id){if(confirm('Excluir esta atividade?')){db.activities=db.activities.filter(x=>x.id!==id);persist()}}
+function delE(id){if(confirm('Excluir esta avaliação?')){db.evaluations=db.evaluations.filter(x=>x.id!==id);persist()}}
+function latest(arr){return arr.slice().sort((a,b)=>b.date.localeCompare(a.date))[0]}
+function monthMatch(d,ref=new Date()){let x=new Date(d+'T12:00:00');return x.getMonth()===ref.getMonth()&&x.getFullYear()===ref.getFullYear()}
+function weekMatch(d){
+ let n=new Date(),x=new Date(d+'T12:00:00'),day=(n.getDay()+6)%7,start=new Date(n);
+ start.setHours(0,0,0,0);start.setDate(n.getDate()-day);let end=new Date(start);end.setDate(start.getDate()+7);return x>=start&&x<end;
+}
+function timeFmt(m){let h=Math.floor(m/60),min=m%60;return h?`${h}h${min?` ${min}min`:''}`:`${min}min`}
+function pct(v){return Math.max(0,Math.min(100,v))}
+function renderHome(){
+ let ev=latest(db.evaluations),ac=db.activities.filter(x=>monthMatch(x.date)),tm=ac.reduce((s,x)=>s+x.dur,0);
+ dPeso.textContent=ev?ev.peso.toFixed(1)+' kg':'—';dGordura.textContent=ev?ev.gord.toFixed(1)+'%':'—';dAtiv.textContent=ac.length;dTempo.textContent=timeFmt(tm);
+ homePeriod.textContent=new Date().toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
+ let la=latest(db.activities);
+ lastActivity.innerHTML=la?`<div class="item"><div><strong>${la.type}</strong><div class="muted">${fmtDate(la.date)} · ${timeFmt(la.dur)} · ${la.local||'Local não informado'}</div></div></div>`:'<div class="empty">Nenhuma atividade registrada.</div>';
+ lastEval.innerHTML=ev?`<div class="item"><div><strong>${ev.peso.toFixed(1)} kg · ${ev.gord.toFixed(1)}% gordura</strong><div class="muted">${fmtDate(ev.date)} · massa magra ${ev.mm.toFixed(1)} kg</div></div></div>`:'<div class="empty">Nenhuma avaliação registrada.</div>';
+ let g=db.goals,cards=[];
+ if(g.peso&&ev){let progress=100-Math.abs(ev.peso-g.peso)/Math.max(ev.peso,1)*100;cards.push(`<div class="card"><div class="label">Meta de peso</div><div class="value">${g.peso.toFixed(1)} <span class="unit">kg</span></div><div class="progress"><i style="width:${pct(progress)}%"></i></div><div class="kpi">Atual: ${ev.peso.toFixed(1)} kg · ${Math.abs(ev.peso-g.peso).toFixed(1)} kg restantes</div></div>`)}
+ if(g.gord&&ev){let progress=100-Math.abs(ev.gord-g.gord)/Math.max(ev.gord,1)*100;cards.push(`<div class="card"><div class="label">Meta de gordura</div><div class="value">${g.gord.toFixed(1)}%</div><div class="progress"><i style="width:${pct(progress)}%"></i></div><div class="kpi">Atual: ${ev.gord.toFixed(1)}%</div></div>`)}
+ let wk=db.activities.filter(x=>weekMatch(x.date)).length;
+ if(g.freq){let progress=pct(wk/g.freq*100);cards.push(`<div class="card"><div class="label">Frequência semanal</div><div class="value">${wk}/${g.freq}</div><div class="progress"><i style="width:${progress}%"></i></div><div class="kpi">${progress.toFixed(0)}% da meta</div></div>`)}
+ goalCards.innerHTML=cards.join('')||'<div class="empty">Defina suas metas em Configurações.</div>';
+}
+function renderLists(){
+ activityList.innerHTML=db.activities.slice().sort((a,b)=>b.date.localeCompare(a.date)).map(x=>`<div class="item"><div><strong>${x.type}</strong><div class="muted">${fmtDate(x.date)} · ${timeFmt(x.dur)} · ${x.local||'—'} · ${x.int}</div>${x.obs?`<div class="muted">${x.obs}</div>`:''}</div><button class="btn secondary" onclick="delA(${x.id})">Excluir</button></div>`).join('')||'<div class="empty">Nenhuma atividade registrada.</div>';
+ evalList.innerHTML=db.evaluations.slice().sort((a,b)=>b.date.localeCompare(a.date)).map(x=>`<div class="item"><div><strong>${x.peso.toFixed(1)} kg · ${x.gord.toFixed(1)}%</strong><div class="muted">${fmtDate(x.date)} · gordura ${x.mg.toFixed(1)} kg · massa magra ${x.mm.toFixed(1)} kg${x.alt?` · IMC ${(x.peso/(x.alt*x.alt)).toFixed(1)}`:''}</div></div><button class="btn secondary" onclick="delE(${x.id})">Excluir</button></div>`).join('')||'<div class="empty">Nenhuma avaliação registrada.</div>';
+ let ev=latest(db.evaluations);calcFat.textContent=ev?ev.mg.toFixed(1)+' kg':'—';calcLean.textContent=ev?ev.mm.toFixed(1)+' kg':'—';calcBMI.textContent=ev&&ev.alt?(ev.peso/(ev.alt*ev.alt)).toFixed(1):'—';
+ gPeso.value=db.goals.peso||'';gGord.value=db.goals.gord||'';gFreq.value=db.goals.freq||'';
+}
+function changeReport(delta){reportMonth.setMonth(reportMonth.getMonth()+delta);renderReports()}
+function renderReports(){
+ let mode=rPeriodo.value,ref=reportMonth,arr=mode==='month'?db.activities.filter(x=>monthMatch(x.date,ref)):db.activities.filter(x=>weekMatch(x.date));
+ let total=arr.reduce((s,x)=>s+x.dur,0);rAtiv.textContent=arr.length;rTempo.textContent=timeFmt(total);rTitulo.textContent=mode==='month'?ref.toLocaleDateString('pt-BR',{month:'long',year:'numeric'}):'Semana atual';
+ let map={};arr.forEach(x=>map[x.type]=(map[x.type]||0)+x.dur);let max=Math.max(...Object.values(map),1);
+ rTipos.innerHTML=Object.entries(map).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<div class="barrow"><span style="width:90px">${k}</span><div class="bar" style="width:${Math.max(8,v/max*100)}%"></div><span>${timeFmt(v)}</span></div>`).join('')||'<div class="empty">Sem atividades no período.</div>';
+ let ev=db.evaluations.slice().sort((a,b)=>a.date.localeCompare(b.date)).slice(-8);
+ if(ev.length){
+   let maxP=Math.max(...ev.map(x=>x.peso)),minP=Math.min(...ev.map(x=>x.peso)),range=Math.max(maxP-minP,.1);
+   rCorpo.innerHTML=`<div class="linechart">${ev.map(x=>{let h=25+(x.peso-minP)/range*130;return `<div class="col"><i style="height:${h}px"></i>${x.peso.toFixed(1)}<br>${fmtDate(x.date).slice(0,5)}</div>`}).join('')}</div><div class="muted">Evolução do peso nas últimas avaliações · Gordura: ${ev[ev.length-1].gord.toFixed(1)}%</div>`;
+ } else rCorpo.innerHTML='<div class="empty">Registre avaliações para acompanhar a evolução.</div>';
+}
+function renderAll(){renderHome();renderLists();renderReports()}
+function exportData(){let b=new Blob([JSON.stringify(db,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='minha-evolucao-backup.json';a.click();URL.revokeObjectURL(a.href)}
+function clearData(){if(confirm('Apagar todos os registros? Esta ação não pode ser desfeita.')){db={activities:[],evaluations:[],goals:{peso:null,gord:null,freq:4}};persist()}}
+aData.value=eData.value=today();renderAll();
+</script>
+</body></html>
